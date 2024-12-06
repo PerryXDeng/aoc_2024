@@ -1,0 +1,55 @@
+# -----------------------------------
+# PyCharm-specific files
+# -----------------------------------
+.idea/
+*.iml
+
+# -----------------------------------
+# Python bytecode and compiled files
+# -----------------------------------
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pyc
+
+# Cython build
+*.so
+
+# -----------------------------------
+# Distribution / Packaging
+# -----------------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# -----------------------------------
+# Virtual Environments
+# -----------------------------------
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# -----------------------------------
+# Logs and temporary files
+# -----------------------------------
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# -----------------------------------
+# Jupyter Notebook checkpoints
+# -----------------------------------
+.ipynb_checkpoints/
+
+# -----------------------------------
+# System Files
+# -----------------------------------
+.DS_Store
+Thumbs.db
