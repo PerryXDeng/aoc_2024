@@ -70,20 +70,20 @@ def forward_trace_identify_loop(X, n, m, current_ij, current_direction):
   i, j = current_ij
   direction = current_direction
   loop_identified = False
-  trace_ijs_directions = []
-  # trace_ijs_directions_set = set(trace_ijs_directions)
+  # trace_ijs_directions = []
+  trace_ijs_directions_set = set()
   while 0 <= i < n and 0 <= j < m:
     next_ij, next_direction = get_next_position_and_direction(X, n, m, (i, j),
                                                               direction)
     i, j = next_ij
     direction = next_direction
-    # if (i, j, direction) in trace_ijs_directions_set:
-    if (i, j, direction) in trace_ijs_directions:
+    if (i, j, direction) in trace_ijs_directions_set:
+    # if (i, j, direction) in trace_ijs_directions:
       # print('loop identified:', i, j, direction)
       loop_identified = True
       break
-    # trace_ijs_directions_set.add((i, j, direction))
-    trace_ijs_directions.append((i, j, direction))
+    trace_ijs_directions_set.add((i, j, direction))
+    # trace_ijs_directions.append((i, j, direction))
   return loop_identified
 
 
