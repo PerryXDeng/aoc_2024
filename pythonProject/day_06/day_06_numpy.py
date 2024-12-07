@@ -1,5 +1,3 @@
-from multiprocessing.resource_sharer import DupFd
-
 import numpy as np
 
 # Define integer codes for directions and symbols
@@ -57,29 +55,35 @@ def forward_trace(X, n, m, current_ij, current_direction):
   i, j = current_ij
   direction = current_direction
   trace_ijs = []
+  trace_ijs_directions = []
   while 0 <= i < n and 0 <= j < m:
     trace_ijs.append((i, j))
-    next_ij, next_direction = get_next_position_and_direction(X, n, m, (i, j),
-                                                              direction)
-    i, j = next_ij
-    direction = next_direction
-  return trace_ijs
-
-
-def forward_trace_identify_loop(X, n, m, current_ij, current_direction):
-  i, j = current_ij
-  direction = current_direction
-  trace_ijs_directions = []
-  loop_identified = False
-  while 0 <= i < n and 0 <= j < m:
-    if (i, j, direction) in trace_ijs_directions:
-      loop_identified = True
-      break
     trace_ijs_directions.append((i, j, direction))
     next_ij, next_direction = get_next_position_and_direction(X, n, m, (i, j),
                                                               direction)
     i, j = next_ij
     direction = next_direction
+  return trace_ijs, trace_ijs_directions
+
+
+def forward_trace_identify_loop(X, n, m, current_ij, current_direction):
+  i, j = current_ij
+  direction = current_direction
+  loop_identified = False
+  trace_ijs_directions = []
+  # trace_ijs_directions_set = set(trace_ijs_directions)
+  while 0 <= i < n and 0 <= j < m:
+    next_ij, next_direction = get_next_position_and_direction(X, n, m, (i, j),
+                                                              direction)
+    i, j = next_ij
+    direction = next_direction
+    # if (i, j, direction) in trace_ijs_directions_set:
+    if (i, j, direction) in trace_ijs_directions:
+      # print('loop identified:', i, j, direction)
+      loop_identified = True
+      break
+    # trace_ijs_directions_set.add((i, j, direction))
+    trace_ijs_directions.append((i, j, direction))
   return loop_identified
 
 
@@ -88,21 +92,22 @@ def duplicate(X, n, m):
 
 
 def find_looping_obstacles(X, n, m, starting_ij, starting_direction):
-  trace_ijs = forward_trace(X, n, m, starting_ij, starting_direction)
-  candidates = trace_ijs[1:]
+  trace_ijs, _ = forward_trace(X, n, m, starting_ij, starting_direction)
+  candidates = trace_ijs
+  # filter out repeated positions
+  candidates = list(set(candidates))
+  # filter out any candidate that overlaps with the starting position
+  candidates = [candidate for candidate in candidates if candidate != starting_ij]
   obstacle_positions = []
   print('number of candidates:', len(candidates))
-  print(n, m)
+  # print(n, m)
   for index, (i, j) in enumerate(candidates):
     if index % 50 == 0:
       print('checking:', index, i, j)
-    if (i, j) not in obstacle_positions:
-      # Temporarily set obstacle
-      X[i, j] = OBSTACLE
-      if forward_trace_identify_loop(X, n, m, starting_ij, starting_direction):
-        obstacle_positions.append((i, j))
-      # Restore original value (EMPTY)
-      X[i, j] = EMPTY
+    Y = duplicate(X, n, m)
+    Y[i, j] = OBSTACLE
+    if forward_trace_identify_loop(Y, n, m, starting_ij, starting_direction):
+      obstacle_positions.append((i, j))
   return obstacle_positions
 
 
@@ -131,20 +136,22 @@ def main():
       if X[i, j] in [UP, DOWN, LEFT, RIGHT]:
         starting_ij = (i, j)
         starting_direction = X[i, j]
+        break
 
   # Part 1
-  trace_ijs = forward_trace(X, n, m, starting_ij, starting_direction)
+  trace_ijs, _ = forward_trace(X, n, m, starting_ij, starting_direction)
   Y = duplicate(X, n, m)
   for i, j in trace_ijs:
     Y[i, j] = PREVIOUS_POSITION
 
   count = np.sum(Y == PREVIOUS_POSITION)
-  print(count)
+  # print(count)
 
   # Part 2
   obstacle_positions = find_looping_obstacles(X, n, m, starting_ij,
                                               starting_direction)
   print(len(obstacle_positions))
+  print(obstacle_positions) # should contain: (6, 3), (7, 6), (7, 7), (8, 1), (8, 3), (9, 7) in test data
 
 
 if __name__ == '__main__':
